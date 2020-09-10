@@ -34,16 +34,33 @@ there shouldn't be any major problems installing the required software. The appl
 were tested using OpenJDK 11, but there are no specific requirements in the source code that would bind 
 it to this version. 
 
-For Debian-based distributions:
+The installation scripts were tested on Ubuntu 20.04 and Red Hat 8 EL. Make sure you run the commands either as a 
+super user or with a *sudo* prefix.
+
+For Ubuntu:
 ```shell script
 apt-get update -y
 apt-get install docker-compose make gcc openjdk-11-jdk git openssl-dev maven 
 ``` 
 
-For Red Hat-based distributions
+Red Hat 8 takes a bit more preparation, but you can copy and paste this entire script into your console. 
 ```shell script
 yum update -y
-yum update docker-compose openssl-dev docker.io openjdk-11-jdk git gcc make
+# docker-compose installation procedure taken from https://www.howtoforge.com/install-and-use-docker-compose-on-centos-8/, with a destination path modification to fit RHEL8
+dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+dnf install docker-ce --nobest -y
+systemctl start docker
+systemctl enable docker
+dnf install curl -y
+curl -L https://github.com/docker/compose/releases/download/1.25.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/sbin/docker-compose
+yum update make gcc openssl-dev git java-11-openjdk.x86_64 java-11-openjdk-devel.x86_64
+
+# for some reason, my instance of RHEL8 insisted on keeping Java 8 default. If that's the case (java -version), do the following
+JAVA_11=$(alternatives --display java | grep 'family java-11-openjdk' | cut -d' ' -f1)
+alternatives --set java $JAVA_11
+JAVAC_11=$(alternatives --display javac | grep 'family java-11-openjdk' | cut -d' ' -f1)
+alternatives --set javac $JAVAC_11
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk/
 ```
 
 #### 2. Clone the git repository with the source code
