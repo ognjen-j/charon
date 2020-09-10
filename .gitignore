@@ -3,3 +3,5 @@
 **/target/**
 .rand
 docker-compose.yaml
+/build/
+**/build/**
