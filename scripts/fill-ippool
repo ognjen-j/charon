@@ -1,0 +1,65 @@
+#!/bin/bash
+# Functions written by jjarmoc. https://gist.github.com/jjarmoc/1299906
+
+function atoi
+{
+  IP=$1; IPNUM=0
+  for (( i=0 ; i<4 ; ++i )); do
+    ((IPNUM+=${IP%%.*}*$((256**$((3-${i}))))))
+    IP=${IP#*.}
+  done
+  echo $IPNUM
+}
+
+function itoa
+{
+  echo -n $(($(($(($((${1}/256))/256))/256))%256)).
+  echo -n $(($(($((${1}/256))/256))%256)).
+  echo -n $(($((${1}/256))%256)).
+  echo $((${1}%256))
+}
+
+ENVIRONMENT_CONFIG_FILE=$1
+TARGET_DIRECTORY=$2
+
+# shellcheck disable=SC1090
+source "${ENVIRONMENT_CONFIG_FILE}"
+
+network_address="${OVPN_CLIENT_POOL_NETWORK}"
+network_mask="${OVPN_CLIENT_POOL_NETMASK}"
+
+echo "Filling the IP address pool. Another long procedure."
+network_address_num=$(atoi "${network_address}")
+network_mask_num=$(atoi "${network_mask}")
+current_address=${network_address_num}
+echo "use radius;" > "${TARGET_DIRECTORY}/configs/sql/ippool_fill.sql"
+previous=""
+command_header="INSERT INTO radippool (pool_name, framedipaddress, nasipaddress) values "
+element_counter=0;
+while true
+do
+  current_address=$(expr ${current_address} + 2)
+  logical_and=$(($network_mask_num & $current_address))
+  if [ ${logical_and} -eq ${network_address_num} ]
+  then
+    if [ ${element_counter} -eq 0 ]
+    then
+      previous=${command_header}' ('"'"'main_pool'"'"','"'"$(itoa ${current_address})"'"','"'"${OVPN_NAS_PORT}"'"')'
+    else
+      previous=${previous}',('"'"'main_pool'"'"','"'"$(itoa ${current_address})"'"','"'"${OVPN_NAS_PORT}"'"')'
+    fi
+    element_counter=`expr ${element_counter} + 1`
+    if [ ${element_counter} -eq 5000 ]
+    then
+      echo "${previous};" >> "${TARGET_DIRECTORY}/configs/sql/ippool_fill.sql"
+      element_counter=0
+      previous=""
+    fi
+  else
+    break
+  fi
+done
+if [ "${previous}n" != "n" ]
+then
+  echo "${previous};" >> "${TARGET_DIRECTORY}/configs/sql/ippool_fill.sql"
+fi

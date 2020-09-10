@@ -1,0 +1,11 @@
+use radius;
+INSERT INTO radgroupreply (id, groupname, attribute, op, value) values (null, 'users', 'MS-Primary-DNS-Server', '=', '__OVPN_DNS_1__');
+INSERT INTO radgroupreply (id, groupname, attribute, op, value) values (null, 'users', 'MS-Secondary-DNS-Server', '=', '__OVPN_DNS_2__');
+INSERT INTO radgroupreply (id, groupname, attribute, op, value) values (null, 'users', 'Framed-IP-Netmask', '=', '__OVPN_CLIENT_POOL_NETMASK__');
+INSERT INTO radgroupcheck (id, groupname, attribute, op, value) values (null, 'users', 'Pool-Name', ':=', 'main_pool');
+INSERT INTO radusergroup (id, username, groupname, priority) values (null, '__ADMIN_USERNAME__', 'users', 1);
+INSERT INTO radcheck (id, username, attribute, op, value) VALUES (null, '__ADMIN_USERNAME__', 'Cleartext-Password', ':=', sha2('__ADMIN_PASSWORD__', 512));
+INSERT INTO radcheck (id, username, attribute, op, value) VALUES (null, '__ADMIN_USERNAME__', 'Expiration', ':=', '4102444801');
+INSERT INTO user_role (user_role_id, username, role_name) VALUES (null, '__ADMIN_USERNAME__', 'USER');
+INSERT INTO user_role (user_role_id, username, role_name) VALUES (null, '__ADMIN_USERNAME__', 'OVPN');
+INSERT INTO user_role (user_role_id, username, role_name) VALUES (null, '__ADMIN_USERNAME__', 'CA');

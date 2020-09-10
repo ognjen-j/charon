@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" class="no-js">
+
+<head>
+    <span th:replace="components/head.html :: head"></span>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/bootstrap-datepicker.min.css}"/>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/bootstrap-datepicker.standalone.min.css}"/>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/font-awesome.css}"/>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/bootstrap.min.css}"/>
+    <script th:src="@{/js/datetime/jquery-3.5.1.min.js}"></script>
+    <script th:src="@{/js/datetime/popper.min.js}"></script>
+    <script th:src="@{/js/datetime/bootstrap.min.js}"></script>
+    <script th:src="@{/js/datetime/bootstrap-datepicker.min.js}"></script>
+</head>
+
+<body>
+<!-- Main container -->
+<div class="container">
+    <!-- Blueprint header -->
+    <span th:replace="components/header.html :: header(#{menu.error})"></span>
+    <button class="action action--open" aria-label="Open Menu"><span class="icon icon--menu"></span></button>
+    <nav id="ml-menu" class="menu">
+        <button class="action action--close" aria-label="Close Menu"><span class="icon icon--cross"></span></button>
+        <div class="menu__wrap" th:insert="components/menu.html :: menu">
+
+        </div>
+    </nav>
+    <div class="content">
+        <br />
+        <br />
+        <br />
+        <p class="info" th:text="#{message.not_found}"></p>
+    </div>
+</div>
+<!-- /view -->
+<span th:replace="components/menu.html :: menujs"></span>
+</body>
+
+</html>

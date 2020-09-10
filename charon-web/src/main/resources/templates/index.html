@@ -1,0 +1,166 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" class="no-js">
+
+<head>
+    <span th:replace="components/head.html :: head"></span>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/bootstrap-datepicker.min.css}"/>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/bootstrap-datepicker.standalone.min.css}"/>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/font-awesome.css}"/>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/bootstrap.min.css}"/>
+    <script th:src="@{/js/datetime/jquery-3.5.1.min.js}"></script>
+    <script th:src="@{/js/datetime/popper.min.js}"></script>
+    <script th:src="@{/js/datetime/bootstrap.min.js}"></script>
+    <script th:src="@{/js/datetime/bootstrap-datepicker.min.js}"></script>
+</head>
+
+<body>
+<!-- Main container -->
+<div class="container">
+    <!-- Blueprint header -->
+    <span th:replace="components/header.html :: header(#{menu.basic_info})"></span>
+    <button class="action action--open" aria-label="Open Menu"><span class="icon icon--menu"></span></button>
+    <nav id="ml-menu" class="menu">
+        <button class="action action--close" aria-label="Close Menu"><span class="icon icon--cross"></span></button>
+        <div class="menu__wrap" th:insert="components/menu.html :: menu">
+
+        </div>
+    </nav>
+    <div class="content">
+        <p class="info">
+        <table>
+            <tr>
+                <td style="width: 50%;vertical-align: middle;padding-top: 20px;">
+                    <img th:src="@{/img/user.png}"/>&nbsp;
+                    <span th:text="#{user.user_info}"></span>
+                </td>
+                <td style="width: 50%;vertical-align: middle ;padding-top: 20px;">
+                    <img th:src="@{/img/cert.png}"/>&nbsp;
+                    <span th:text="#{user.certificate_info}"></span>
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 50%;vertical-align: top;padding-top: 20px;">
+                    <table>
+                        <tr>
+                            <td class="lcol">
+                                <span th:text="#{user.username}"></span>
+                            </td>
+                            <td class="rcol">
+                                <span th:text="${user.username}"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="lcol">
+                                <span th:text="#{user.expiration_date}"></span>
+                            </td>
+                            <td class="rcol">
+                                <span th:text="${#temporals.format(user.expirationDate, 'dd.MM.yyyy HH:mm:ss')}"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="lcol">
+                                <span th:text="#{user.roles}"></span>
+                            </td>
+                            <td class="rcol">
+                                <span th:text="${#strings.listJoin(user.roles,', ')}"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="lcol">
+                                <span th:text="#{user.routes}"></span>
+                            </td>
+                            <td class="rcol">
+                                <span th:text="${#strings.listJoin(user.routes,', ')}"></span>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+                <td style="width: 50%;vertical-align: top;padding-top: 20px;">
+                    <span th:if="${user.activeCertificate == null}" th:text="#{user.no_active_certificate}"></span>
+                    <span th:if="${user.activeCertificate == null}" th:text="#{message.you_need_to_create_a_new_certificate}"></span>
+                    <table th:unless="${user.activeCertificate == null}">
+                        <tr>
+                            <td class="lcol">
+                                <span th:text="#{cert.cn}"></span>
+                            </td>
+                            <td class="rcol">
+                                <span th:text="${user.activeCertificate.commonName}"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="lcol">
+                                <span th:text="#{cert.dn}"></span>
+                            </td>
+                            <td class="rcol">
+                                <span th:text="${user.activeCertificate.distinguishedName}"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="lcol">
+                                <span th:text="#{cert.cert_serial}"></span>
+                            </td>
+                            <td class="rcol">
+                                <span th:text="${user.activeCertificate.certificateSerial}"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="lcol">
+                                <span th:text="#{cert.issue_date}"></span>
+                            </td>
+                            <td class="rcol">
+                                <span th:text="${#temporals.format(user.activeCertificate.issueDate, 'dd.MM.yyyy HH:mm:ss')}"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="lcol">
+                                <span th:text="#{cert.expiration_date}"></span>
+                            </td>
+                            <td class="rcol">
+                                <span th:text="${#temporals.format(user.activeCertificate.expirationDate, 'dd.MM.yyyy HH:mm:ss')}"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="lcol">
+                                <span th:text="#{cert.download}"></span>
+                            </td>
+                            <td class="rcol">
+                                <a href="/download" th:unless="${user.activeCertificate.downloaded}"
+                                   th:text="#{cert.download}"></a>
+                                <span th:if="${user.activeCertificate.downloaded}"
+                                      th:text="#{cert.already_downloaded}"></span>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 50%; vertical-align: top; padding-top: 20px">
+                    <img th:src="@{/img/config.png}"/>&nbsp;
+                    <a href="/configuration" th:text="#{user.download_configuration}"></a>
+                </td>
+                <td style="width: 50%;vertical-align: top;padding-top: 20px;">
+                    <img th:src="@{/img/android.png}"/>&nbsp;
+                    <a href="https://play.google.com/store/apps/details?id=de.blinkt.openvpn" target="_blank"
+                       th:text="#{menu.android_client}"></a>
+                </td>
+            </tr>
+            <tr>
+                <td style="width: 50%; vertical-align: top; padding-top: 20px">
+                    <span th:text="#{message.configuration_note}"></span>
+                </td>
+                <td style="width: 50%;vertical-align: top;padding-top: 20px;">
+                    <img th:src="@{/img/ios.png}"/>&nbsp;
+                    <a href="https://apps.apple.com/us/app/openvpn-connect/id590379981" target="_blank"
+                       th:text="#{menu.ios_client}"></a>
+                </td>
+            </tr>
+        </table>
+
+        </p>
+    </div>
+</div>
+<!-- /view -->
+<span th:replace="components/menu.html :: menujs"></span>
+</body>
+
+</html>

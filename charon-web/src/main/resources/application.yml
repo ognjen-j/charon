@@ -1,0 +1,13 @@
+spring:
+  datasource:
+    hikari:
+      minimumIdle: 5
+      maximumPoolSize: 10
+  messages:
+    basename: i18n/messages
+server:
+  error:
+    path: /error/
+logging:
+  level:
+    root: INFO

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+function nat_vpn_network
+{
+  echo 1 > /proc/sys/net/ipv4/ip_forward
+
+  sed -i "s/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g" /etc/sysctl.conf
+  default_interface=`route | grep UG | awk '{print $8}'`
+  iptables --table nat --flush
+  iptables --table nat --delete-chain
+  iptables --table nat -A POSTROUTING -o ${default_interface} -j MASQUERADE
+  iptables -A FORWARD -i tun+ -o ${default_interface} -m state --state RELATED,ESTABLISHED -j ACCEPT
+  iptables -A FORWARD -i ${default_interface} -o tun+ -j ACCEPT
+}
+
+# route traffic
+nat_vpn_network
+
+crl_available=0
+while [ ${crl_available} -eq 0 ]
+do
+  if [ -f "/opt/certificates/ovpn/crl/crl.pem" ]
+  then
+    echo "CRL list available. Starting OpenVPN server."
+    crl_available=1
+  else
+    echo "CRL list not yet available. Trying again in 10 seconds."
+    sleep 10
+  fi
+done
+
+openvpn --config /etc/openvpn/server/openvpn.conf
+

@@ -1,0 +1,19 @@
+client
+remote [( ${host} )] [( ${port} )]
+ca [( ${cacertpath} )]
+cert [( ${clientcertpath} )]
+key [( ${clientkeypath} )]
+auth-user-pass
+cipher [( ${ovpncipher} )]
+auth [( ${ovpndigest} )]
+comp-lzo yes
+connect-retry 2 300
+dev tun
+proto udp
+nobind
+auth-nocache
+script-security 2
+persist-key
+persist-tun
+user openvpn
+group openvpn

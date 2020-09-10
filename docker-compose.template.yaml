@@ -1,0 +1,114 @@
+version: "3"
+networks:
+  ovpn_radius:
+    ipam:
+      config:
+        - subnet: 10.41.125.0/24
+  radius_mysql:
+    ipam:
+      config:
+        - subnet: 10.41.126.0/24
+  mysql_webapp:
+    ipam:
+      config:
+        - subnet: 10.41.127.0/24
+  external:
+    ipam:
+      config:
+        - subnet: 10.41.1.0/24
+services:
+  ovpn:
+    build:
+      context: .
+      dockerfile: docker/openvpn.Dockerfile
+      args:
+        OVPN_DNS_1: __OVPN_DNS_1__
+        OVPN_DNS_2: __OVPN_DNS_2__
+    privileged: true
+    restart: always
+    depends_on:
+      - radius
+    networks:
+      ovpn_radius:
+        ipv4_address: 10.41.125.2
+      external:
+        ipv4_address: 10.41.1.2
+    ports:
+      - "__OVPN_PUBLIC_PORT__:__OVPN_PUBLIC_PORT__/udp"
+    volumes:
+      - __PERSISTENT_VOLUME_DIRECTORY__/ovpn:/opt/certificates/ovpn:ro
+  db:
+    image: mysql:5.7.30
+    restart: always
+    networks:
+      mysql_webapp:
+        ipv4_address: 10.41.127.2
+      radius_mysql:
+        ipv4_address: 10.41.126.3
+    expose:
+      - "3306/tcp"
+    volumes:
+      - /opt/charon/db:/var/lib/mysql:rw
+      - /opt/charon/dbinit:/docker-entrypoint-initdb.d:ro
+    environment:
+      MYSQL_ROOT_USER: root
+      MYSQL_ROOT_PASSWORD: __MYSQL_ROOT_PASSWORD__
+  radius:
+    build:
+      context: .
+      dockerfile: docker/freeradius.Dockerfile
+      args:
+        RADIUS_DB_ADDRESS: 10.41.126.3
+        RADIUS_DB_USERNAME: radius
+        RADIUS_DB_PASSWORD: __MYSQL_RADIUS_PASSWORD__
+    restart: always
+    depends_on: [db]
+    networks:
+      ovpn_radius:
+        ipv4_address: 10.41.125.3
+      radius_mysql:
+        ipv4_address: 10.41.126.2
+    expose:
+      - "__RADIUS_AUTHENTICATION_PORT__/udp"
+      - "__RADIUS_ACCOUNTING_PORT__/udp"
+  webapp:
+    build:
+      context: .
+      dockerfile: docker/charonweb.Dockerfile
+      args:
+        RADIUS_DB_ADDRESS: 10.41.127.2
+        RADIUS_DB_USERNAME: __MYSQL_WEBAPP_USERNAME__
+        RADIUS_DB_PASSWORD: __MYSQL_WEBAPP_PASSWORD__
+    restart: always
+    depends_on: [db]
+    networks:
+      mysql_webapp:
+        ipv4_address: 10.41.127.3
+      external:
+        ipv4_address: 10.41.1.3
+    ports:
+      - "__REST_ENDPOINT_PORT__:__REST_ENDPOINT_PORT__"
+    volumes:
+      - __PERSISTENT_VOLUME_DIRECTORY__/ovpn:/opt/certificates/ovpn:rw
+      - __PERSISTENT_VOLUME_DIRECTORY__/downloads:/opt/certificates/downloads:rw
+      - __PERSISTENT_VOLUME_DIRECTORY__/ca:/opt/certificates/ca:ro
+    environment:
+      KEY_LENGTH: __KEY_LENGTH__
+      RADIUS_DB_ADDRESS: 10.41.127.2
+      RADIUS_DB_USERNAME: __MYSQL_WEBAPP_USERNAME__
+      RADIUS_DB_PASSWORD: __MYSQL_WEBAPP_PASSWORD__
+      RADIUS_DB_TIMEZONE: __SERVER_TIMEZONE__
+      WEB_SERVER_PORT: __REST_ENDPOINT_PORT__
+      WEB_SERVER_ADDRESS: __OVPN_PUBLIC_IP_ADDRESS__
+      CA_CERTIFICATE: /opt/certificates/ovpn/ca.pem
+      CA_KEY: /opt/certificates/ca/private/ca.key
+      CA_KEY_PASS: __KEY_PASSWORD__
+      CA_HOME: /opt/certificates/ovpn
+      CRL_HOME: /opt/certificates/ovpn/crl
+      CA_DOWNLOADS_HOME: /opt/certificates/downloads
+      OVPN_PUBLIC_IP_ADDRESS: __OVPN_PUBLIC_IP_ADDRESS__
+      OVPN_PUBLIC_PORT: __OVPN_PUBLIC_PORT__
+      OVPN_CIPHER: __OVPN_CIPHER__
+      OVPN_DIGEST: __OVPN_DIGEST__
+      WEB_SERVER_KEYSTORE: /opt/certificates/ovpn/charon-web.p12
+      WEB_SERVER_KEYSTORE_PASS: __WEB_SERVER_KEYSTORE_PASSWORD__

@@ -1,0 +1,119 @@
+# -*- text -*-
+######################################################################
+#
+#	This is a virtual server that handles *only* inner tunnel
+#	requests for EAP-TTLS and PEAP types.
+#
+#	$Id: 70b1d8da255a740d2d1b59808393722766dc6a60 $
+#
+######################################################################
+# This file was intentionally shortened for charon, because this module is not important.
+# If needed, see the original file that is shipped with freeradius.
+server inner-tunnel {
+
+#
+#  This next section is here to allow testing of the "inner-tunnel"
+#  authentication methods, independently from the "default" server.
+#  It is listening on "localhost", so that it can only be used from
+#  the same machine.
+#
+#	$ radtest USER PASSWORD 127.0.0.1:18120 0 testing123
+#
+#  If it works, you have configured the inner tunnel correctly.  To check
+#  if PEAP will work, use:
+#
+#	$ radtest -t mschap USER PASSWORD 127.0.0.1:18120 0 testing123
+#
+#  If that works, PEAP should work.  If that command doesn't work, then
+#
+#	FIX THE INNER TUNNEL CONFIGURATION SO THAT IT WORKS.
+#
+#  Do NOT do any PEAP tests.  It won't help.  Instead, concentrate
+#  on fixing the inner tunnel configuration.  DO NOTHING ELSE.
+#
+listen {
+       ipaddr = 127.0.0.1
+       port = 18120
+       type = auth
+}
+
+authorize {
+	filter_username
+	suffix
+	update control {
+		&Proxy-To-Realm := LOCAL
+	}
+	sql
+	expiration
+	logintime
+	pap
+}
+
+authenticate {
+	Auth-Type PAP {
+		pap
+	}
+}
+
+######################################################################
+#
+#	There are no accounting requests inside of EAP-TTLS or PEAP
+#	tunnels.
+#
+######################################################################
+
+
+#  Session database, used for checking Simultaneous-Use. Either the radutmp
+#  or rlm_sql module can handle this.
+#  The rlm_sql module is *much* faster
+session {
+	radutmp
+	sql
+}
+
+
+post-auth {
+	sql
+	if (0) {
+		#
+		#  These attributes are for the inner-tunnel only,
+		#  and MUST NOT be copied to the outer reply.
+		#
+		update reply {
+			User-Name !* ANY
+			Message-Authenticator !* ANY
+			EAP-Message !* ANY
+			Proxy-State !* ANY
+			MS-MPPE-Encryption-Types !* ANY
+			MS-MPPE-Encryption-Policy !* ANY
+			MS-MPPE-Send-Key !* ANY
+			MS-MPPE-Recv-Key !* ANY
+		}
+
+		update {
+			&outer.session-state: += &reply:
+		}
+	}
+
+	Post-Auth-Type REJECT {
+		# log failed authentications in SQL, too.
+		sql
+		attr_filter.access_reject
+
+		#
+		#  Let the outer session know which module failed, and why.
+		#
+		update outer.session-state {
+			&Module-Failure-Message := &request:Module-Failure-Message
+		}
+	}
+}
+
+pre-proxy {
+}
+
+post-proxy {
+
+}
+
+} # inner-tunnel server block

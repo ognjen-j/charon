@@ -1,0 +1,40 @@
+#!/bin/sh
+
+host=$1
+username=$2
+password=$3
+shift 3
+command=$@
+
+# check which client is available
+which mysql >> /dev/null 2>&1
+mysqlresult=$?
+which mycli >> /dev/null 2>&1
+mycliresult=$?
+if [ ${mysqlresult} -eq 0 ]
+then
+  echo "Found mysql client, using it to probe database"
+  mysqlclient="mysql"
+elif [ ${mycliresult} -eq 0 ]
+then
+  echo "Found mycli client, using it to probe database"
+  mysqlclient="mycli"
+else
+  echo "No mysql client found, exiting"
+  exit 1
+fi
+dbnotready=1
+while [ ${dbnotready} -ne 0 ]
+do
+  ${mysqlclient} -u ${username} --password=${password} -h ${host} -D radius -e "SELECT count(*) FROM marker_table" >> /dev/null 2>&1
+  dbnotready=$?
+  if [ ${dbnotready} -ne 0 ]
+  then
+    echo "Database not yet ready, attempting again in 30s"
+    sleep 30
+  else
+    echo "Database is ready, continuing."
+  fi
+done
+
+exec ${command}

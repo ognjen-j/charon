@@ -1,0 +1,37 @@
+#!/bin/bash
+# Argument 1: main config file
+# Argument 2: target root
+
+ENVIRONMENT_CONFIG_FILE=$1
+TARGET_DIRECTORY=$2
+
+source ${ENVIRONMENT_CONFIG_FILE}
+variables=$(cat "${ENVIRONMENT_CONFIG_FILE}" | grep -vE "^#" | grep -vE "^$" | cut -d= -f1)
+config_files=$(find "${TARGET_DIRECTORY}"/configs/ -type f)
+public_interface=`route -n | grep UG | awk '{print $2}'`
+if [ "x${OVPN_PUBLIC_IP_ADDRESS}" != "x" ]
+then
+  echo "Using public interface address value ${OVPN_PUBLIC_IP_ADDRESS}"
+else
+  public_interface=`route -n | grep "^0.0.0.0" | sort -k5 -r | head -1 | awk '{print $8}'`
+  echo "Using ${public_interface} as public-facing interface of the server"
+  outbound_address=`ip address show ${public_interface} | grep inet | grep -v inet6 | awk '{print $2}' | cut -d/ -f1`
+  echo "Found ${outbound_address} as the outbound address"
+  export OVPN_PUBLIC_IP_ADDRESS=${outbound_address}
+  variables="${variables} OVPN_PUBLIC_IP_ADDRESS"
+fi
+if [ "x${OVPN_PUBLIC_IP_ADDRESS}" == "x" ]
+then
+  echo "No valid IP address has been found. Please set the value of the OVPN_PUBLIC_IP_ADDRESS configuration variable manually and rerun the build procedure"
+  exit 1
+fi
+for variable in ${variables}
+do
+  replacement=$(echo ${!variable})
+  sed -i 's~__'"${variable}"'__~'"${replacement}"'~g' "${TARGET_DIRECTORY}"/charon-acct/charon.conf
+  sed -i 's~__'"${variable}"'__~'"${replacement}"'~g' docker-compose.yaml
+  for config_file in ${config_files}
+  do
+    sed -i 's~__'"${variable}"'__~'"${replacement}"'~g' "${config_file}"
+  done
+done

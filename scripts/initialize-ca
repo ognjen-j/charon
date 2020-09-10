@@ -1,0 +1,106 @@
+#!/bin/bash
+# Argument 1: main config file
+# Argument 2: target root
+
+ENVIRONMENT_CONFIG_FILE=$1
+TARGET_DIRECTORY=$2
+
+# shellcheck disable=SC1090
+source "${ENVIRONMENT_CONFIG_FILE}"
+
+CA_ROOT="${TARGET_DIRECTORY}/ca"
+CA_PRIVATE_KEY_DIRECTORY="${TARGET_DIRECTORY}/ca/private"
+
+echo -n "${WEB_SERVER_KEYSTORE_PASSWORD}" > keystorepass.txt
+echo "Creating the CA private key"
+echo -n "${KEY_PASSWORD}" > tmppass.txt
+chmod 600 tmppass.txt
+openssl genrsa -out "${CA_PRIVATE_KEY_DIRECTORY}/ca.key" \
+        -passout file:tmppass.txt \
+        -aes256 \
+        ${KEY_LENGTH}
+
+echo "Creating the CA certificate"
+openssl req -new -x509 \
+        -subj "/C=${ROOT_CA_C}/ST=${ROOT_CA_ST}/L=${ROOT_CA_L}/O=${ROOT_CA_O}/OU=${ROOT_CA_OU}/CN=${ROOT_CA_CN}" \
+        -key "${CA_PRIVATE_KEY_DIRECTORY}/ca.key" \
+        -passin file:tmppass.txt \
+        -set_serial 0x01ffffffff01 \
+        -out "${CA_ROOT}/ca.pem" \
+        -days ${CA_CERTIFICATE_DURATION_DAYS}  \
+        -sha256 \
+        -config "${TARGET_DIRECTORY}/configs/openssl.cnf" \
+        -batch
+
+echo "Creating the OVPN CA private key"
+openssl genrsa -out "${CA_ROOT}/ovpn.key" \
+        ${KEY_LENGTH}
+
+echo "Creating the OVPN CA CSR"
+openssl req -new \
+        -subj "/C=${ROOT_CA_C}/ST=${ROOT_CA_ST}/L=${ROOT_CA_L}/O=${ROOT_CA_O}/OU=${ROOT_CA_OU}/CN=${OVPN_CA_CN}" \
+        -key "${CA_ROOT}/ovpn.key" \
+        -passin file:tmppass.txt \
+        -out "${CA_ROOT}/ovpn.csr" \
+        -config "${TARGET_DIRECTORY}/configs/openssl.cnf" \
+        -batch
+
+echo "Signing the OVPN server certificate"
+openssl x509 -req \
+        -CAkey "${CA_PRIVATE_KEY_DIRECTORY}/ca.key" \
+        -in "${CA_ROOT}/ovpn.csr" \
+        -passin file:tmppass.txt \
+        -CA "${CA_ROOT}/ca.pem" \
+        -set_serial 0x01ffffffff02 \
+        -out "${CA_ROOT}/ovpn.pem" \
+        -extfile "${TARGET_DIRECTORY}/configs/openssl.cnf" \
+        -extensions usr_cert \
+        -sha256 \
+        -days ${CA_CERTIFICATE_DURATION_DAYS}
+
+echo "Creating the WEB server SSL private key"
+openssl genrsa -out "${CA_ROOT}/charon-web.key" \
+        ${KEY_LENGTH}
+
+echo "Creating the WEB server SSL CSR"
+openssl req -new \
+        -subj "/C=${ROOT_CA_C}/ST=${ROOT_CA_ST}/L=${ROOT_CA_L}/O=${ROOT_CA_O}/OU=${ROOT_CA_OU}/CN=Charon web" \
+        -key "${CA_ROOT}/charon-web.key" \
+        -passin file:tmppass.txt \
+        -out "${CA_ROOT}/charon-web.csr" \
+        -config "${TARGET_DIRECTORY}/configs/openssl.cnf" \
+        -batch
+
+echo "Signing the WEB server SSL certificate"
+openssl x509 -req \
+        -CAkey "${CA_PRIVATE_KEY_DIRECTORY}/ca.key" \
+        -in "${CA_ROOT}/charon-web.csr" \
+        -passin file:tmppass.txt \
+        -CA "${CA_ROOT}/ca.pem" \
+        -set_serial 0x01ffffffff03 \
+        -out "${CA_ROOT}/charon-web.pem" \
+        -extfile "${TARGET_DIRECTORY}/configs/openssl.cnf" \
+        -extensions usr_cert \
+        -days 3650
+
+echo "Exporting the certificates in a PKCS12 store"
+openssl pkcs12 -export \
+        -out "${CA_ROOT}/charon-web.p12" \
+        -inkey "${CA_ROOT}/charon-web.key" \
+        -in "${CA_ROOT}/charon-web.pem" \
+        -passin file:tmppass.txt \
+        -passout file:keystorepass.txt \
+        -name "charon" \
+        -certfile "${CA_ROOT}/ca.pem"
+
+echo "Deleting intermediate SSL files"
+rm -f "${CA_ROOT}/charon-web.key"
+rm -f "${CA_ROOT}/charon-web.csr"
+rm -f "${CA_ROOT}/charon-web.pem"
+rm -f "${CA_ROOT}/ovpn.csr"
+
+rm tmppass.txt
+rm keystorepass.txt
+
+echo "Generating the DH params. This takes a long time."
+openssl dhparam -out "${CA_ROOT}/dh${DH_PARAM_LENGTH}.pem" "${DH_PARAM_LENGTH}"

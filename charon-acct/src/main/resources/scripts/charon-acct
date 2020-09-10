@@ -1,0 +1,5 @@
+#!/bin/bash
+
+JAR_FILE_NAME=charon-acct-##JAR_VERSION##.jar
+
+java -cp ${JAR_FILE_NAME}:lib/ ognjenj.charon.acct.runner.Runner $@

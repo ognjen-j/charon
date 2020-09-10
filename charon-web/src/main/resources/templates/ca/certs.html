@@ -1,0 +1,71 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" class="no-js">
+
+<head>
+    <span th:replace="components/head.html :: head"></span>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/font-awesome.css}"/>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/bootstrap.min.css}"/>
+</head>
+
+<body>
+<!-- Main container -->
+<div class="container">
+    <!-- Blueprint header -->
+    <span th:replace="components/header.html :: header(#{menu.certificates})"></span>
+    <button class="action action--open" aria-label="Open Menu"><span class="icon icon--menu"></span></button>
+    <nav id="ml-menu" class="menu">
+        <button class="action action--close" aria-label="Close Menu"><span class="icon icon--cross"></span></button>
+        <div class="menu__wrap" th:insert="components/menu.html :: menu">
+
+        </div>
+    </nav>
+    <div class="content">
+        <p class="info">
+        <form th:object="${certsForm}" method="POST" action="/ca/certs" style="padding-bottom: 30px">
+
+            <div class="filter date">
+                <input type="checkbox" class="form-control" id="showActive" th:field="*{showActive}"/>
+                <label for="showActive" th:text="#{certs.show_active}" style="padding-right: 30px">Show active</label>
+                <input type="checkbox" class="form-control" id="showRevoked" th:field="*{showRevoked}"/>
+                <label for="showRevoked" th:text="#{certs.show_revoked}" style="padding-right: 30px">Show revoked</label>
+                <input type="checkbox" class="form-control" id="showExpired" th:field="*{showExpired}"/>
+                <label for="showExpired" th:text="#{certs.show_expired}" style="padding-right: 30px">Show expired</label>
+            </div>
+            <button type="submit" th:text="#{button.refresh}"></button>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        </form>
+        <span class="error" id="errorMessage" th:text="${message}"></span>
+        <table class="listtbl">
+            <thead>
+            <td th:text="#{certs.common_name}"></td>
+            <td th:text="#{cert.cert_serial}"></td>
+            <td th:text="#{certs.issue_time}"></td>
+            <td th:text="#{certs.expired}"></td>
+            <td th:text="#{certs.revoked}"></td>
+            <td th:text="#{certs.downloaded}" class="colicon"></td>
+            <td th:text="#{certs.revoke}" class="colicon"></td>
+            </thead>
+            <tr th:each="cert: ${certs}">
+                <td th:text="${cert.commonName}"></td>
+                <td th:text="${cert.certificateSerial}"></td>
+                <td th:text="${#temporals.format(cert.issueDate, 'dd.MM.yyyy HH:mm:ss')}"></td>
+                <td th:style="${cert.expired} ? 'color: red' : 'font-weight: normal'" th:text="${#temporals.format(cert.expirationDate, 'dd.MM.yyyy HH:mm:ss')}"></td>
+                <td th:text="${cert.revoked} ? ${#temporals.format(cert.revocationDate, 'dd.MM.yyyy HH:mm:ss')} : '-'"></td>
+                <td class="colicon">
+                    <img th:if="${cert.downloaded}" th:src="@{/img/ok.png}" />
+                </td>
+                <td class="colicon">
+                    <a th:if="${!cert.revoked}" th:href="'/ca/revoke?d=' + ${cert.certificateSerial}">
+                        <img th:src="@{/img/revoke.png}" />
+                    </a>
+                </td>
+            </tr>
+        </table>
+        </p>
+    </div>
+</div>
+<!-- /view -->
+<span th:replace="components/menu.html :: menujs"></span>
+</body>
+
+</html>

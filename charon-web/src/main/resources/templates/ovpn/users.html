@@ -1,0 +1,91 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" class="no-js">
+
+<head>
+    <span th:replace="components/head.html :: head"></span>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/font-awesome.css}"/>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/bootstrap.min.css}"/>
+</head>
+
+<body>
+<!-- Main container -->
+<div class="container">
+    <!-- Blueprint header -->
+    <span th:replace="components/header.html :: header(#{menu.ovpn_users})"></span>
+    <button class="action action--open" aria-label="Open Menu"><span class="icon icon--menu"></span></button>
+    <nav id="ml-menu" class="menu">
+        <button class="action action--close" aria-label="Close Menu"><span class="icon icon--cross"></span></button>
+        <div class="menu__wrap" th:insert="components/menu.html :: menu">
+
+        </div>
+    </nav>
+    <div class="content">
+        <p class="info">
+        <span class="error" id="errorMessage" th:text="${message}"></span>
+        <table class="listtbl">
+            <thead>
+                <td th:text="#{user.username}" class="colmid"></td>
+                <td th:text="#{user.expiration_date}" class="colmid"></td>
+                <td th:text="#{user.roles}" class="colmid"></td>
+                <td th:text="#{certs.certificate_status}" class="colmid"></td>
+                <td th:text="#{certs.downloaded}" class="colicon"></td>
+                <td th:text="#{user.edit}" class="colicon"></td>
+                <td th:text="#{user.block}" class="colicon"></td>
+                <td th:text="#{certs.regenerate_certificate}" class="colicon"></td>
+                <td th:text="#{user.reset_password}" class="colicon"></td>
+            </thead>
+            <tr th:each="user: ${users}">
+                <td th:text="${user.username}" class="colmid"></td>
+                <td th:text="${#temporals.format(user.expirationDate, 'dd.MM.yyyy HH:mm:ss')}" class="colmid"></td>
+                <td th:text="${#strings.listJoin(user.roles,', ')}" class="colmid"></td>
+                <td class="colmid">
+                    <span th:if="${user.activeCertificate != null}">
+                        <span th:text="#{cert.revocation_date} + ':'"></span>&nbsp;<span
+                            th:text="${user.activeCertificate.revoked} ? ${#temporals.format(user.activeCertificate.revocationDate, 'dd.MM.yyyy HH:mm:ss')} : '-'"></span>
+                        <br/>
+                        <span th:text="#{cert.expiration_date} + ':'"></span>&nbsp;<span
+                            th:style="${user.activeCertificate.expired} ? 'color: red' : 'font-weight: normal'"
+                            th:text="${#temporals.format(user.activeCertificate.expirationDate, 'dd.MM.yyyy HH:mm:ss')}"></span>
+                    </span>
+                    <span th:unless="${user.activeCertificate != null}" th:text="#{user.no_active_certificate}"></span>
+                </td>
+                <td class="colicon">
+                    <span th:if="${user.activeCertificate != null}">
+                        <a th:if="${user.activeCertificate.downloaded}">
+                            <img th:src="@{/img/ok.png}"/>
+                        </a>
+                        <a th:unless="${user.activeCertificate.downloaded}">
+                            <img th:src="@{/img/cancel.png}"/>
+                        </a>
+                    </span>
+                </td>
+                <td class="colicon">
+                    <a th:href="'/ovpn/newuser?d=' + ${user.username}">
+                        <img th:src="@{/img/edit.png}"/>
+                    </a>
+                </td>
+                <td class="colicon">
+                    <a th:if="${user.active}" th:href="'/ovpn/block?d=' + ${user.username}">
+                        <img th:src="@{/img/block.png}"/>
+                    </a>
+                </td>
+                <td class="colicon">
+                    <a th:if="${user.active}" th:href="'/ca/newcert?c=' + ${user.username}">
+                        <img th:src="@{/img/renew.png}"/>
+                    </a>
+                </td>
+                <td class="colicon">
+                    <a th:if="${user.active}" th:href="'/ovpn/reset?d=' + ${user.username}">
+                        <img th:src="@{/img/reset.png}"/>
+                    </a>
+                </td>
+            </tr>
+        </table>
+        </p>
+    </div>
+</div>
+<!-- /view -->
+<span th:replace="components/menu.html :: menujs"></span>
+</body>
+
+</html>

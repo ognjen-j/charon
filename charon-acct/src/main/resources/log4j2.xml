@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+    <Appenders>
+        <Console name="ConsoleLogger" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d %-5p [%t]: %m%n"/>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="ognjenj.charon.acct" level="debug" additivity="false">
+            <AppenderRef ref="ConsoleLogger"/>
+        </Logger>
+        <Root level="error">
+            <AppenderRef ref="ConsoleLogger"/>
+        </Root>
+    </Loggers>
+</Configuration>

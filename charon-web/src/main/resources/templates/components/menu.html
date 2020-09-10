@@ -1,0 +1,86 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" class="no-js">
+<head></head>
+<body>
+<div class="menu__wrap" th:fragment="menu">
+    <ul data-menu="main" class="menu__level" tabindex="-1" role="menu" aria-label="All">
+        <li class="menu__item" role="menuitem"><a class="menu__link"
+                                                  href="/index" th:text="#{menu.basic_info}"></a></li>
+        <li class="menu__item" role="menuitem"><a class="menu__link"
+                                                  href="/password" th:text="#{menu.change_password}"></a></li>
+        <li class="menu__item" role="menuitem"><a class="menu__link"
+                                                  href="/ovpn/connections" th:text="#{menu.connections}"></a></li>
+        <li class="menu__item" role="menuitem"><a class="menu__link" data-submenu="submenu-1" aria-owns="submenu-1"
+                                                  href="#" th:text="#{menu.ca}"></a></li>
+        <li class="menu__item" role="menuitem"><a class="menu__link" data-submenu="submenu-3" aria-owns="submenu-3"
+                                                  href="#" th:text="#{menu.ovpn}"></a></li>
+    </ul>
+    <ul data-menu="submenu-1" id="submenu-1" class="menu__level" tabindex="-1" role="menu" aria-label="#{menu.ca}">
+        <li class="menu__item" role="menuitem"><a class="menu__link" href="/ca/newcert" th:text="#{menu.new_certificate}"></a></li>
+        <li class="menu__item" role="menuitem"><a class="menu__link" href="/ca/certs"
+                                                  th:text="#{menu.certificates}"></a></li>
+    </ul>
+    <ul data-menu="submenu-3" id="submenu-3" class="menu__level" tabindex="-1" role="menu"
+        aria-label="#{menu.ovpn}">
+        <li class="menu__item" role="menuitem"><a class="menu__link" href="/ovpn/users"
+                                                  th:text="#{menu.ovpn_users}"></a></li>
+        <li class="menu__item" role="menuitem"><a class="menu__link" href="/ovpn/attempts"
+                                                  th:text="#{menu.attempts}"></a></li>
+        <li class="menu__item" role="menuitem"><a class="menu__link" href="/ovpn/newuser"
+                                                  th:text="#{menu.ovpn_new}"></a></li>
+    </ul>
+</div>
+
+<span th:fragment="menujs">
+        <script th:src="@{/js/classie.js}"></script>
+<script th:src="@{/js/main.js}"></script>
+<script>
+	(function() {
+		var menuEl = document.getElementById('ml-menu'),
+			mlmenu = new MLMenu(menuEl, {
+				// breadcrumbsCtrl : true, // show breadcrumbs
+				// initialBreadcrumb : 'all', // initial breadcrumb text
+				backCtrl : false, // show back button
+				// itemsDelayInterval : 60, // delay between each menu item sliding animation
+				onItemClick: function() {
+                    window.location.href = menuEl.getAttribute("href");
+				}
+			});
+
+		// mobile menu toggle
+		var openMenuCtrl = document.querySelector('.action--open'),
+			closeMenuCtrl = document.querySelector('.action--close');
+
+		openMenuCtrl.addEventListener('click', openMenu);
+		closeMenuCtrl.addEventListener('click', closeMenu);
+
+		function openMenu() {
+			classie.add(menuEl, 'menu--open');
+			closeMenuCtrl.focus();
+		}
+
+		function closeMenu() {
+			classie.remove(menuEl, 'menu--open');
+			openMenuCtrl.focus();
+		}
+
+		// simulate grid content loading
+		var gridWrapper = document.querySelector('.content');
+
+		function loadDummyData(ev, itemName) {
+			ev.preventDefault();
+
+			closeMenu();
+			gridWrapper.innerHTML = '';
+			classie.add(gridWrapper, 'content--loading');
+			setTimeout(function() {
+				classie.remove(gridWrapper, 'content--loading');
+				gridWrapper.innerHTML = '<ul class="products">' + dummyData[itemName] + '<ul>';
+			}, 700);
+		}
+	})();
+	</script>
+    </span>
+</body>
+
+</html>

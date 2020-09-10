@@ -1,0 +1,23 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" class="no-js">
+<head></head>
+<body>
+<header class="bp-header cf" th:fragment="header(pageTitle)">
+    <div class="dummy-logo">
+        <div class="dummy-icon foodicon foodicon--coconut"></div>
+        <h2 class="dummy-heading">Charon VPN admin</h2>
+    </div>
+    <div class="bp-header__main">
+        <form method="POST" action="/logout" id="logout_form">
+            <span class="bp-header__present">
+                <a href="javascript:{}" onclick="document.getElementById('logout_form').submit();" th:text="#{login.logout}"></a>
+            </span>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        </form>
+
+        <h1 class="bp-header__title" th:text="${pageTitle}">Page title</h1>
+    </div>
+</header>
+</body>
+
+</html>

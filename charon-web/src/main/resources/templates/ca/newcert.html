@@ -1,0 +1,83 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" class="no-js">
+
+<head>
+    <span th:replace="components/head.html :: head"></span>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/font-awesome.css}"/>
+    <link th:rel="stylesheet" th:href="@{/css/datetime/bootstrap.min.css}"/>
+</head>
+
+<body>
+<!-- Main container -->
+<div class="container">
+    <!-- Blueprint header -->
+    <span th:replace="components/header.html :: header(#{menu.new_certificate})"></span>
+    <button class="action action--open" aria-label="Open Menu"><span class="icon icon--menu"></span></button>
+    <nav id="ml-menu" class="menu">
+        <button class="action action--close" aria-label="Close Menu"><span class="icon icon--cross"></span></button>
+        <div class="menu__wrap" th:insert="components/menu.html :: menu">
+
+        </div>
+    </nav>
+    <div class="content">
+        <p class="info">
+        <form th:object="${newCertForm}" method="POST" action="/ca/newcert" style="padding-bottom: 30px">
+            <table>
+                <tr>
+                    <td class="lcol">
+                        <label for="commonName" th:text="#{certs.common_name}">Common name</label>
+                    </td>
+                    <td class="rcol">
+                        <input id="commonName" th:field="*{commonName}" th:attrappend="disabled=${newCertForm.extendExisting ? 'disabled' : null}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="lcol">
+                        <label for="duration" th:text="#{certs.duration}">Duration</label>
+                    </td>
+                    <td class="rcol">
+                        <select id="duration" th:field="*{duration}">
+                            <option th:text="#{certs.30days}" value="30"></option>
+                            <option th:text="#{certs.180days}" value="180"></option>
+                            <option th:text="#{certs.1year}" value="365"></option>
+                            <option th:text="#{certs.3years}" value="1095"></option>
+                            <option th:text="#{certs.5years}" value="1825"></option>
+                            <option th:text="#{certs.10years}" value="3650"></option>
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="lcol">
+                        <label for="downloadPassword" th:text="#{certs.download_password}">Download password</label>
+                    </td>
+                    <td class="rcol">
+                        <input type="password" id="downloadPassword" th:field="*{downloadPassword}" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="lcol">
+                        &nbsp;
+                    </td>
+                    <td class="rcol">
+                        <span class="error" id="errorMessage" th:text="${message}"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="lcol">
+                        &nbsp;
+                    </td>
+                    <td class="rcol">
+                        <button type="submit" th:text="#{button.save}"></button>
+                    </td>
+                </tr>
+            </table>
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        </form>
+        </p>
+    </div>
+</div>
+<!-- /view -->
+<span th:replace="components/menu.html :: menujs"></span>
+</body>
+
+</html>
