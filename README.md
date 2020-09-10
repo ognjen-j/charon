@@ -101,12 +101,12 @@ for all fields except `CN` (CommonName, which will be the user name). The meanin
 from the default values, but in case it isn't, the suffixes have the following meanings: `C`=country, `S`=state or province, 
 `L`=city (locality), `O`=organization, `OU`=organizational unit, `CN`=common name. Use any values, but quote them if they 
 contain special characters. Finally, `OVPN_CA_CN` contains the common name of the certificate used for OpenVPN.
-`WEB_SERVER_KEYSTORE_PASSWORD` - the password used to encrypt the certificate used by the web administration application 
+* `WEB_SERVER_KEYSTORE_PASSWORD` - the password used to encrypt the certificate used by the web administration application 
 to establish an HTTP connection. Since this certificate is self-signed, you will have to add an exception in your browser 
 when you access it for the first time.
-`REST_ENDPOINT_PORT` - the TCP port to access the web application. If you leave the default value (`443`), you can access the 
+* `REST_ENDPOINT_PORT` - the TCP port to access the web application. If you leave the default value (`443`), you can access the 
 application by using `https://<public_ip_of_your_server>`. Otherwise, it has to be `https://<public_ip_of_your_server>:<port>`.
-`ADMIN_USERNAME` and `ADMIN_PASSWORD` - username and password for the initial user. The installation will setup everything except the 
+* `ADMIN_USERNAME` and `ADMIN_PASSWORD` - username and password for the initial user. The installation will setup everything except the 
 client certificate. After logging in, select `CA certificates` -> `New certificate` and create a certificate for the user.
 
 #### 4. Compile the source code
