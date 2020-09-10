@@ -59,7 +59,7 @@ public class InternalPluginServerThread extends Thread {
 		try {
 			char[] buffer = new char[4096];
 			int messageLength = reader.read(buffer, 0, buffer.length);
-			if(messageLength>0) {
+			if (messageLength > 0) {
 				String fullMessage = new String(buffer, 0, messageLength);
 				String acceptedMessage = validateSignatureAndExtractMessage(fullMessage);
 				if (acceptedMessage != null) {
@@ -81,8 +81,8 @@ public class InternalPluginServerThread extends Thread {
 							RadPacket accessRequest = RadPacket.RadPacketBuilder.createAccessRequestPacket(username,
 									clientInfo.getEnvironmentMap()
 											.get(ClientEnvironmentInfo.ClientEnvironmentAttribute.PASSWORD),
-									config.getRadiusSharedSecret(), config.getOvpnNasIpAddress(), config.getOvpnNasPort(),
-									config.getPacketId().getAndIncrement());
+									config.getRadiusSharedSecret(), config.getOvpnNasIpAddress(),
+									config.getOvpnNasPort(), config.getPacketId().getAndIncrement());
 							RadPacket accessResponse = RadClient.sendReceiveRadiusPacket(accessRequest, config);
 							if (accessResponse != null
 									&& accessResponse.getPacketType() == RadPacket.RadPacketType.ACCESS_ACCEPT) {
@@ -121,7 +121,8 @@ public class InternalPluginServerThread extends Thread {
 						} catch (SharedSecretMissingException ignored) {
 							config.getLogger().error("Shared secret is missing from the message.");
 						} finally {
-							config.getLogger().debug(String.format("Writing %d to file %s", (acceptClient ? 1 : 0), controlFile.getAbsolutePath()));
+							config.getLogger().debug(String.format("Writing %d to file %s", (acceptClient ? 1 : 0),
+									controlFile.getAbsolutePath()));
 							controlFileWriter.println(acceptClient ? "1" : "0");
 							controlFileWriter.close();
 						}
@@ -144,12 +145,14 @@ public class InternalPluginServerThread extends Thread {
 							if (optionalSession.isPresent()) {
 								ClientSession session = optionalSession.get();
 								RadPacket acctStop = RadPacket.RadPacketBuilder.createAccountingRequestPacket(
-										session.getUsername(), config.getRadiusSharedSecret(), config.getOvpnNasIpAddress(),
-										config.getOvpnNasPort(), RadAttribute.RadAccountingStatusType.STOP,
-										session.getFramedIpAddress(), session.getCallingStationId(), 0, bytesSent,
-										bytesReceived, session.getRadiusSessionId(),
+										session.getUsername(), config.getRadiusSharedSecret(),
+										config.getOvpnNasIpAddress(), config.getOvpnNasPort(),
+										RadAttribute.RadAccountingStatusType.STOP, session.getFramedIpAddress(),
+										session.getCallingStationId(), 0, bytesSent, bytesReceived,
+										session.getRadiusSessionId(),
 										RadAttribute.RadAccountingAuthenticationMode.RADIUS,
-										(int) session.getSessionStartTime().until(LocalDateTime.now(), ChronoUnit.SECONDS),
+										(int) session.getSessionStartTime().until(LocalDateTime.now(),
+												ChronoUnit.SECONDS),
 										0, 0, RadAttribute.RadAccountingTerminationCause.USER_REQUEST,
 										config.getPacketId().getAndIncrement());
 								RadClient.sendReceiveRadiusPacket(acctStop, config);
@@ -163,8 +166,7 @@ public class InternalPluginServerThread extends Thread {
 						writer.write(buffer, 0, messageLength);
 						writer.flush();
 					}
-				}
-				else {
+				} else {
 					config.getLogger().debug("Received a message with an invalid signature.");
 				}
 				reader.close();

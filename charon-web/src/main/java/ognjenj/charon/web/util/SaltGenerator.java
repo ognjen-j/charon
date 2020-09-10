@@ -1,9 +1,10 @@
 package ognjenj.charon.web.util;
 
-import org.apache.commons.codec.binary.Hex;
-import org.apache.commons.codec.digest.Crypt;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.codec.digest.Crypt;
 
 public class SaltGenerator {
 	public static String getAlphaNumericString(int stringSize) {

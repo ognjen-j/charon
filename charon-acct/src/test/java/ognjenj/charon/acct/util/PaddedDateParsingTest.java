@@ -1,11 +1,10 @@
 package ognjenj.charon.acct.util;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoField;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoField;
 
 public class PaddedDateParsingTest {
 	@Test

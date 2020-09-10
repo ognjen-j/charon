@@ -8,8 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,9 +42,10 @@ public class OvpnClientStatusFileParser {
 			} else if (startedProcessing) {
 				try {
 					String[] elements = line.trim().split(",");
-					clients.put(elements[0], new OvpnClientStatus(elements[0], elements[1], Long.parseLong(elements[2]),
-							Long.parseLong(elements[3]),
-							VariableDateParser.parseDateTimeWithVariablePadding(elements[4], "EEE LLL d H:mm:ss yyyy")));
+					clients.put(elements[0],
+							new OvpnClientStatus(elements[0], elements[1], Long.parseLong(elements[2]),
+									Long.parseLong(elements[3]), VariableDateParser
+											.parseDateTimeWithVariablePadding(elements[4], "EEE LLL d H:mm:ss yyyy")));
 				} catch (DateTimeParseException ex) {
 					Files.deleteIfExists(tmpStatusFilePath);
 					throw new GenericAccountingException(ex.getMessage(), ex);

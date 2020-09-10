@@ -1,6 +1,5 @@
 package ognjenj.charon.acct.runner;
 
-import java.io.PrintWriter;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ognjenj.charon.acct.ovpn.ClientSessionStore;
