@@ -40,7 +40,7 @@ super user or with a *sudo* prefix.
 For Ubuntu:
 ```shell script
 apt-get update -y
-apt-get install docker-compose make gcc openjdk-11-jdk git openssl-dev maven 
+apt-get install docker-compose make gcc openjdk-11-jdk git openssl maven -y 
 ``` 
 
 Red Hat 7 takes a bit more preparation, but you can copy and paste this entire script into your console. 
