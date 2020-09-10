@@ -37,13 +37,13 @@ it to this version.
 For Debian-based distributions:
 ```shell script
 apt-get update -y
-apt-get install openssl-dev docker.io openjdk-11-jdk git gcc make awk route
+apt-get install docker-compose make gcc openjdk-11-jdk git openssl-dev maven 
 ``` 
 
 For Red Hat-based distributions
 ```shell script
 yum update -y
-yum update openssl-dev docker.io openjdk-11-jdk git gcc make
+yum update docker-compose openssl-dev docker.io openjdk-11-jdk git gcc make
 ```
 
 #### 2. Clone the git repository with the source code
@@ -58,7 +58,7 @@ The configuration options should work without any changes, but it is advisable t
 change the passwords, for security reasons. The configuration options are stored in a file 
 called `environment.conf` in the root of the repository. 
 
-The only option you actually need to pay attention to is **`PERSISTENT_VOLUME_DIRECTORY`**. 
+The only option you actually need to pay attention to is **`PERSISTENT_VOLUME_DIRECTORY`**.
 In order to be able to maintain state (the certificates and the user database) after server restarts, 
 some files have to be persisted on the host machine. This variable denotes a directory **on the host server** 
 that needs to be accessible by the user running the installation commands. If you are using the superuser account 
@@ -68,7 +68,7 @@ it's probably best to create a directory manually, and set the path to it in the
 All options from the config file contain an explanation in the comments, but these are some of the most important ones:
 
 * `OVPN_PUBLIC_PORT` - public UDP port on which OpenVPN listens. Change this if your ISP blocks 
-access to the default OpenVPN port (1194).
+access to the default OpenVPN port (1194). Make sure that access to this port is not restricted (UDP).
 * `OVPN_CIPHER` and `OVPN_DIGEST` - encryption and hashing algorithms used by OpenVPN to create 
 a secure tunnel. Stronger algorithms give better security, but use more resources on both sides. 
 If your client device has limited hardware capabilities, using a stronger algorithm may degrade 
@@ -105,7 +105,8 @@ contain special characters. Finally, `OVPN_CA_CN` contains the common name of th
 to establish an HTTP connection. Since this certificate is self-signed, you will have to add an exception in your browser 
 when you access it for the first time.
 * `REST_ENDPOINT_PORT` - the TCP port to access the web application. If you leave the default value (`443`), you can access the 
-application by using `https://<public_ip_of_your_server>`. Otherwise, it has to be `https://<public_ip_of_your_server>:<port>`.
+application by using `https://<public_ip_of_your_server>`. Otherwise, it has to be `https://<public_ip_of_your_server>:<port>`. 
+Make sure that access to this port is not restricted.
 * `ADMIN_USERNAME` and `ADMIN_PASSWORD` - username and password for the initial user. The installation will setup everything except the 
 client certificate. After logging in, select `CA certificates` -> `New certificate` and create a certificate for the user.
 
@@ -131,7 +132,7 @@ docker-compose build
 #### 6. Start the system
 
 ```shell script
-docker-compose up
+docker-compose up -d
 ```
 Based on your server capabilities, it usually takes around 2-3 minutes to start the services. 
 Try logging into the web application to check if the system is operational.
@@ -143,7 +144,16 @@ docker-compose down
 To start it up again, restart step 6. No need to rebuild any part of the system. Whenever you rebuild the system from 
 scratch, you will have to generate new certificates for the clients, even though you are using the same username.
 
-#### 7. Functions of the web application
+#### 7. Log into the web application 
+
+After starting the services, you'll be able to log into the web application and create yourself a certificate. The application 
+packages the certificates (user and CA), the key file and the configuration file in a password-protected archive. 
+You can set the password each time you generate the certificate. The archive can be downloaded only once, after which it 
+is deleted from the server. **IMPORTANT**: the server will put the address of the interface as the remote gateway address 
+in the config file. However, this may be a private address (if the server is behind a NAT device). In that case, before importing 
+the configuration, replace the private endpoint address with the public address or domain name that you use to access the server.
+ 
+#### Functions of the web application
 
 The main menu elements:
 * `Basic user info` - basic user info, configuration download,

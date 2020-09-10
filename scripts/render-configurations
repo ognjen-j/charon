@@ -14,9 +14,13 @@ then
   echo "Using public interface address value ${OVPN_PUBLIC_IP_ADDRESS}"
 else
   public_interface=`route -n | grep "^0.0.0.0" | sort -k5 -r | head -1 | awk '{print $8}'`
+  echo "##################################################################################"
   echo "Using ${public_interface} as public-facing interface of the server"
+  echo "##################################################################################"
   outbound_address=`ip address show ${public_interface} | grep inet | grep -v inet6 | awk '{print $2}' | cut -d/ -f1`
-  echo "Found ${outbound_address} as the outbound address"
+  echo "##################################################################################"
+  echo "Found ${outbound_address} as the outbound address. If this is not correct, stop the procedure, change the config file manually, and restart the process"
+  echo "##################################################################################"
   export OVPN_PUBLIC_IP_ADDRESS=${outbound_address}
   variables="${variables} OVPN_PUBLIC_IP_ADDRESS"
 fi
