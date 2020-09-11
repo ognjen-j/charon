@@ -40,7 +40,14 @@ super user or with a *sudo* prefix.
 For Ubuntu:
 ```shell script
 apt-get update -y
-apt-get install docker-compose make gcc openjdk-11-jdk git openssl maven -y 
+apt-get install docker-compose make gcc openjdk-11-jdk git openssl -y
+
+# for compatibility reasons, install maven separately
+export JAVA_HOME=/usr/lib/jvm/java-11-openjdk/
+curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz --output apache-maven-3.6.3-bin.tar.gz
+tar xvfz apache-maven-3.6.3-bin.tar.gz
+mv apache-maven-3.6.3 /usr/local/
+export PATH=$PATH:/usr/local/apache-maven-3.6.3/bin 
 ``` 
 
 Red Hat 7 takes a bit more preparation, but you can copy and paste this entire script into your console. 
@@ -62,7 +69,7 @@ alternatives --set java $JAVA_11
 JAVAC_11=$(alternatives --display javac | grep 'family java-11-openjdk' | cut -d' ' -f1)
 alternatives --set javac $JAVAC_11
 
-# install maven
+# for compatibility reasons, install maven separately
 export JAVA_HOME=/usr/lib/jvm/java-11-openjdk/
 curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz --output apache-maven-3.6.3-bin.tar.gz
 tar xvfz apache-maven-3.6.3-bin.tar.gz
