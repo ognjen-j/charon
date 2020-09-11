@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ['ubuntu-18.04', 'ubuntu-20.04']
+        os: ['ubuntu-20.04']
     steps:
       - name: Checkout repo
         uses: actions/checkout@v2
@@ -21,14 +21,17 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install docker-compose make gcc openjdk-11-jdk git openssl maven -y
+          export JAVA_HOME=/usr/lib/jvm/java-11-openjdk/
+          curl -L https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz --output apache-maven-3.6.3-bin.tar.gz
+          tar xvfz apache-maven-3.6.3-bin.tar.gz
+          mv apache-maven-3.6.3 /usr/local/
+          export PATH=$PATH:/usr/local/apache-maven-3.6.3/bin
           
       - name: Create the configuration directory
         run: sudo mkdir /opt/charon
 
       - name: Build and start the environment
         run: |
-          pwd
-          ls
           make all
           docker-compose build
           docker-compose up -d
