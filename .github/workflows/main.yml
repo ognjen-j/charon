@@ -30,7 +30,7 @@ jobs:
       - name: Create the configuration directory
         run: |
           mkdir workdir
-          sed -i 's|PERSISTENT_VOLUME_DIRECTORY=/opt/charon|PERSISTENT_VOLUME_DIRECTORY='${pwd}'/workdir|g' environment.conf
+          sed -i 's|PERSISTENT_VOLUME_DIRECTORY=/opt/charon|PERSISTENT_VOLUME_DIRECTORY='$(pwd)'/workdir|g' environment.conf
 
       - name: Build and start the environment
         run: |
