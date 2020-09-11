@@ -28,6 +28,8 @@ jobs:
       - name: Build and start the environment
         working-directory: ./charon
         run: |
+          pwd
+          ls
           make all
           docker-compose build
           docker-compose up -d
