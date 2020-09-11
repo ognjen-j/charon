@@ -26,7 +26,6 @@ jobs:
         run: sudo mkdir /opt/charon
 
       - name: Build and start the environment
-        working-directory: ./charon
         run: |
           pwd
           ls
