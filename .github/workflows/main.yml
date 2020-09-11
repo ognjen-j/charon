@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  deploy:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ['ubuntu-18.04', 'ubuntu-20.04']
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v2
+
+      - name: Install packages
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install docker-compose make gcc openjdk-11-jdk git openssl maven -y
+          
+      - name: Create the configuration directory
+        run: sudo mkdir /opt/charon
+
+      - name: Build and start the environment
+        working-directory: ./charon
+        run: |
+          make all
+          docker-compose build
+          docker-compose up -d
