@@ -28,10 +28,13 @@ jobs:
           export PATH=$PATH:/usr/local/apache-maven-3.6.3/bin
           
       - name: Create the configuration directory
-        run: sudo mkdir /opt/charon
+        run: |
+          mkdir workdir
+          sed -i 's|PERSISTENT_VOLUME_DIRECTORY=/opt/charon|PERSISTENT_VOLUME_DIRECTORY='${pwd}'/workdir|g' environment.conf
 
       - name: Build and start the environment
         run: |
+          make destroy
           make all
           docker-compose build
           docker-compose up -d
